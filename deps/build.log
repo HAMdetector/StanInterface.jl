@@ -60,6 +60,6 @@ ar: creating stan/lib/stan_math/lib/cvodes_2.9.0/lib/libsundials_cvodes.a
 ┌ Warning: `is_unix` is deprecated, use `Sys.isunix` instead.
 │   caller = top-level scope at none:0
 └ @ Core none:0
-[ Info: Attempting to create directory /home/habermann/sync/Jstan
-[ Info: Directory /home/habermann/sync/Jstan already exists
-[ Info: Changing directory to /home/habermann/sync/Jstan/deps/cmdstan-2.17.1
+[ Info: Attempting to create directory /home/habermann/sync/StanInterface
+[ Info: Directory /home/habermann/sync/StanInterface already exists
+[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.17.1

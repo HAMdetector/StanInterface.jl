@@ -1,31 +1,21 @@
 ```@meta
-CurrentModule = Jstan
+CurrentModule = StanInterface
 ```
 
 # Package Guide
 
 ## Installation
 
-Jstan can be installed via the `Pkg.clone`. Afterwards, `Pkg.build("Jstan")` is required to build the necessary dependencies.
 
 ```julia
-Pkg.clone("gogs@132.252.170.166:DanielHa/Jstan.jl.git")
-Pkg.build("Jstan")
+] add http://132.252.170.166:8000/DanielHa/StanInterface.jl.git
 ```
-If SSH access to the repository is unwanted (or no SSH key is setup), use:
-
-```julia
-Pkg.clone("http://132.252.170.166:8000/DanielHa/Jstan.jl.git")
-Pkg.build("Jstan")
-```
-
-Though this requires typing in your Gogs credentials for each `Pkg.update`.
 
 ## Usage
 
 # Minimal working example
 
-Jstan is intended to be a simple wrapper for CmdStan that simplifies file handling.
+StanInterface is intended to be a simple wrapper for CmdStan that simplifies file handling.
 To start, consider this simple bernoulli model with a single parameter `theta`:
 
 ```
@@ -42,10 +32,10 @@ model {
 }
 ```
 
-To run a model, Jstan provides the `stan` function, which requires the path to the Stan model and a dictionary containg the data as input arguments. The input variables of the Stan model are provided as simple String keys to the dictionary:
+To run a model, StanInterface provides the `stan` function, which requires the path to the Stan model and a dictionary containg the data as input arguments. The input variables of the Stan model are provided as simple String keys to the dictionary:
 
 ```julia
-julia> using Jstan
+julia> using StanInterface
 
 julia> sf = stan("bernoulli.stan", Dict("N" => 5, "y" = [0,0,0,1,1]))
 ```
@@ -76,7 +66,7 @@ Dict{String,Array{Float64,1}} with 8 entries:
   "theta"         => [0.458652, 0.48066, 0.721026, 0.605692, 0.40698, 0.40698, …
  ```
 
-By default, Stan is run with 2000 iterations and 4 chains. If possible, chains are run in parallel using Julia's implementation of message passing, so simpling adding workers with `Base.addprocs(n)` or calling julia with `julia -p n` enables parallel sampling.
+By default, Stan is run with 2000 iterations and 4 chains. If possible, chains are run in parallel using Julia's implementation of message passing, so simpling adding workers with `addprocs(n)` or calling julia with `julia -p n` enables parallel sampling.
 ```
 ## Accessing the content of Stanfit objects
 
@@ -131,7 +121,7 @@ julia> sf = stan("bernoulli.stan", Dict("N" => 5, "y" => [0,0,0,0,1]), "optimize
 julia> extract(sf)
 
 Dict{String,Array{Float64,1}} with 2 entries:
-  "theta" => [0.200004]
+  "theta" => [0.200004] 
   "lp__"  => [-2.50201]
 ```
 

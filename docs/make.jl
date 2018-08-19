@@ -9,5 +9,5 @@ makedocs(format = :html, sitename = "StanInterface.jl", authors = "Daniel Haberm
                  ])
 
 deploydocs(
-    repo = "http://132.252.170.166:8000/DanielHa/Jstan.jl.git"
+    repo = "http://132.252.170.166:8000/DanielHa/StanInterface.jl.git"
 )
