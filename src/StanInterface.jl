@@ -109,7 +109,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         function run_stan(i::Int)
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
-                data file=$(io.data_file) random seed=$(rand(1000000:999999)) 
+                data file=$(io.data_file) random seed=$(rand(1:9999999)) 
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
         end
