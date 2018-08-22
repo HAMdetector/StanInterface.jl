@@ -17,6 +17,7 @@ struct Stanfit{T<:AbstractString}
 end
 
 """
+```
     build_binary(model, path)
 
 Build a stan executable binary from a .stan file.
@@ -108,7 +109,9 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         function run_stan(i::Int)
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
-                data file=$(io.data_file) output refresh=$refresh file=$(io.result_file[i]) id=$i`)
+                data file=$(io.data_file) random seed=$(rand(1000000:999999)) 
+                output refresh=$refresh file=$(io.result_file[i]) 
+                id=$i`)
         end
         pmap(run_stan, WorkerPool(workers()[1:processes]), 1:chains)
 
