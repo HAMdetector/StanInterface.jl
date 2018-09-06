@@ -4,16 +4,16 @@ using DelimitedFiles, Distributed
 
 include("StanIO.jl")
 
-export stan, extract, build_binary
+export stan, extract, build_binary, Stanfit
 cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.17.1")
 
-struct Stanfit{T<:AbstractString}
-    model::T
-    data::Dict{T, S} where S <: Any
+struct Stanfit
+    model::String
+    data::Dict{String, Any}
     iter::Int
     chains::Int
     result::Array{Dict{String, Vector{Float64}}}
-    diagnostics::T
+    diagnostics::String	
 end
 
 """
