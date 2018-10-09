@@ -113,6 +113,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
         end
+        
         pmap(run_stan, WorkerPool(workers()[1:processes]), 1:chains)
 
         result = parse_stan_csv.(io.result_file)
@@ -123,6 +124,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         copyfiles(io)
 
         return Stanfit(model, data, iter, chains, result, diagnose_output)
+
     finally
         removefiles(io)
     end
