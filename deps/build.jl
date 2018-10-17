@@ -4,7 +4,7 @@ using BinDeps
 
 cmdstan_src = joinpath(@__DIR__, "downloads", "cmdstan-2.17.1.tar.gz")
 cmdstan_dir = joinpath(@__DIR__, "cmdstan-2.17.1")
-if is_unix()
+if Sys.isunix()
     install_cmdstan = @build_steps begin
         FileUnpacker(cmdstan_src, @__DIR__, "")
         @build_steps begin
