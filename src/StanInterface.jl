@@ -104,7 +104,8 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
     io = StanIO(model, data, chains, save_binary, save_data, save_result, save_diagnostics)
     setupfiles(io)
-
+    sleep(1)
+    
     try
         function run_stan(i::Int)
             run(`chmod +x $(io.binary_file)`)
