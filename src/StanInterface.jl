@@ -104,7 +104,6 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
     io = StanIO(model, data, chains, save_binary, save_data, save_result, save_diagnostics)
     setupfiles(io)
-    sleep(1)
 
     try
         function run_stan(i::Int)
@@ -127,7 +126,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         return Stanfit(model, data, iter, chains, result, diagnose_output)
 
     finally
-        # removefiles(io)
+        removefiles(io)
     end
 end
 
