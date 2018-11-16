@@ -1,0 +1,4 @@
+[ Info: Attempting to create directory /home/habermann/sync/StanInterface
+[ Info: Directory /home/habermann/sync/StanInterface already exists
+[ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.17.1 already exists
+[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.17.1

@@ -15,12 +15,12 @@ function StanIO(model::T, data::Dict{T, S} where S, n_result_files::Int, save_bi
                 save_data::T, save_result::T, 
                 save_diagnostics::T) where {T<:AbstractString}
         
-        result_file = [tempname() for i = 1:n_result_files]
-        binary_file, data_file, diagnostics_file = [tempname() for i = 1:3]
+    result_file = [tempname() for i = 1:n_result_files]
+    binary_file, data_file, diagnostics_file = [tempname() for i = 1:3]
 
-        StanIO(cleanpath(model), data, binary_file, data_file, result_file, 
-               diagnostics_file, cleanpath(save_binary), cleanpath(save_data), 
-               cleanpath(save_result), cleanpath(save_diagnostics))
+    StanIO(cleanpath(model), data, binary_file, data_file, result_file, 
+           diagnostics_file, cleanpath(save_binary), cleanpath(save_data), 
+           cleanpath(save_result), cleanpath(save_diagnostics))
 end
 
 function cleanpath(path::AbstractString)
