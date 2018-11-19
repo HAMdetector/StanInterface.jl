@@ -116,6 +116,11 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         end
         
         pmap(run_stan, WorkerPool(workers()), 1:chains)
+        
+        while !all(isfile.(io.result_file))
+            @warn "$(io.result_file) not yet created"
+            sleep(1)
+        end
 
         result = parse_stan_csv.(io.result_file)
 
