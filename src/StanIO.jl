@@ -48,8 +48,7 @@ function removefiles(io::StanIO)
     rm(io.data_file, force = true)
     rm(io.binary_file, force = true)
     rm(io.diagnostics_file, force = true)
-    typeof(io.result_file) <: AbstractString && rm(io.result_file, force = true)
-    typeof(io.result_file) == Array && rm.(io.result_file, force = true)
+    rm.(io.result_file, force = true)
 end
  
 function save_rdump(path::AbstractString, d::Dict{String, T}) where T <: Any

@@ -39,6 +39,7 @@ function build_binary(model::AbstractString, path::AbstractString)
 end
 
 function parse_stan_csv(stan_csv::AbstractString)
+    isfile(stan_csv) || error("parse_stan_csv error")
     samples, parameters = readdlm(expanduser(stan_csv), ',', header = true, comments = true)
     
     sample_dict = Dict{String, Array{Float64, 1}}()
@@ -166,8 +167,9 @@ function stan(model::AbstractString, data::Dict, method::AbstractString;
         result = parse_stan_csv.(io.result_file)
 
         copyfiles(io)
+        sf = Stanfit(model, data, )
         return Stanfit(model, data, 0, 0, result, diagnose_output)
-
+        
     finally
         removefiles(io)
     end
