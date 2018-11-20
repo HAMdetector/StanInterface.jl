@@ -35,7 +35,7 @@ function setupfiles(io::StanIO)
         cp(io.model, io.binary_file)
     end
     
-    while !isfile!(io.binary_file)
+    while !isfile(io.binary_file)
         sleep(0.1)
     end
 
