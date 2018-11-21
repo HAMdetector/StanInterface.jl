@@ -108,6 +108,13 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
     try
         function run_stan(i::Int)
+	    if !isfile(io.binary_file)
+		error("binary file not found")
+	    end
+	    if !isfile(io.data_file)
+		error("data file not found")
+	    end
+
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
                 data file=$(io.data_file) random seed=$(rand(1:9999999)) 
@@ -148,37 +155,38 @@ Additional command-line arguments can be supplied via the `stan_args` argument.
 
 # Examples
 
-```julia-repl
-julia> stan("bernoulli.stan", Dict("N" => 5, "y" => [0,0,1,1,1]), "optimize",
-            stan_args = "algorithm=newton")
-StanInterface.Stanfit
-```
-"""
-function stan(model::AbstractString, data::Dict, method::AbstractString;
-              stan_args::AbstractString = "", save_binary::AbstractString = "",
-              save_data::AbstractString = "", save_result::AbstractString = "",
-              save_diagnostics::AbstractString = "")
-    
-    io = StanIO(model, data, 1, save_binary, save_data, save_result, save_diagnostics)
-    setupfiles(io)
-
-    try
-        run(`chmod +x $(io.binary_file)`)
-        run(`$(io.binary_file) $method $(split(stan_args))
-            data file=$(io.data_file) output file=$(io.result_file)`)
-
-        diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
-        diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
-        result = parse_stan_csv.(io.result_file)
-
-        copyfiles(io)
-        sf = Stanfit(model, data, )
-        return Stanfit(model, data, 0, 0, result, diagnose_output)
-        
-    finally
-        removefiles(io)
-    end
-end
+#```julia-repl
+#julia> stan("bernoulli.stan", Dict("N" => 5, "y" => [0,0,1,1,1]), "optimize",
+#            stan_args = "algorithm=newton")
+#StanInterface.Stanfit
+#```
+#"""
+#function stan(model::AbstractString, data::Dict, method::AbstractString;
+#              stan_args::AbstractString = "", save_binary::AbstractString = "",
+#              save_data::AbstractString = "", save_result::AbstractString = "",
+#              save_diagnostics::AbstractString = "")
+#    
+#    io = StanIO(model, data, 1, save_binary, save_data, save_result, save_diagnostics)
+#    setupfiles(io)
+#
+#    try
+#        run(`chmod +x $(io.binary_file)`)
+#        run(`$(io.binary_file) $method $(split(stan_args))
+#            data file=$(io.data_file) output file=$(io.result_file)`)
+#
+#        diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
+#        diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
+#        result = parse_stan_csv.(io.result_file)
+#
+#        copyfiles(io)
+#        sf = Stanfit(model, data, )
+#        return Stanfit(model, data, 0, 0, result, diagnose_output)
+#        
+#    finally
+#        removefiles(io)
+#    end
+#end
+#
 
 """
     extract(::Stanfit)
