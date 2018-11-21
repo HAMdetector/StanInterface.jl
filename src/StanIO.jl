@@ -34,10 +34,6 @@ function setupfiles(io::StanIO)
     else
         cp(io.model, io.binary_file)
     end
-    
-    while !isfile(io.binary_file)
-        sleep(0.1)
-    end
 
     io.save_data != "" && save_rdump(io.save_data, io.data)
     io.save_data == "" && save_rdump(io.data_file, io.data)
@@ -46,16 +42,10 @@ end
 function copyfiles(io::StanIO)
     if io.save_result != ""
         combine_stan_csv(io.save_result, io.result_file)
-        while !isfile(io.save_result)
-            sleep(0.1)
-        end
     end
 
     if io.save_diagnostics != ""
         cp(io.diagnostics_file, io.save_diagnostics)
-        while !isfile(io.save_diagnostics)
-            sleep(0.1)
-        end
     end
 end
 
@@ -67,7 +57,8 @@ function removefiles(io::StanIO)
 end
  
 function save_rdump(path::AbstractString, d::Dict{String, T}) where T <: Any
-    # isfile(path) && rm(path)
+    isfile(path) && rm(path)
+    
     strmout = open(expanduser(path), "w")
     str = ""
     for entry in d
@@ -97,9 +88,6 @@ function save_rdump(path::AbstractString, d::Dict{String, T}) where T <: Any
         end
         write(strmout, str)
     end
-    close(strmout)
 
-    while !isfile(expanduser(path))
-        sleep(0.1)
-    end
+    close(strmout)
 end

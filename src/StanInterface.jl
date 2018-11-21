@@ -1,6 +1,6 @@
 module StanInterface
 
-using DelimitedFiles, Distributed
+using DelimitedFiles, Distributed, SharedArrays, Test, Suppressor
 
 include("StanIO.jl")
 
@@ -32,14 +32,16 @@ function build_binary(model::AbstractString, path::AbstractString)
         cd(cmdstan_path)
         run(`make $temppath`)
         cp(temppath, expanduser(path), force = true)
+
+        rm.(temppath .* [".hpp", ".stan"], force = true)
     finally
-        rm.(temppath .* [".hpp", ".stan"])
+        rm.(temppath .* [".hpp", ".stan"], force = true)
         cd(cwd)
     end
 end
 
 function parse_stan_csv(stan_csv::AbstractString)
-    isfile(stan_csv) || error("parse_stan_csv error")
+    @assert isfile(stan_csv)
     samples, parameters = readdlm(expanduser(stan_csv), ',', header = true, comments = true)
     
     sample_dict = Dict{String, Array{Float64, 1}}()
@@ -73,7 +75,7 @@ with the data present at 'data'.
 - `data::Dict{String, T} where T`: dictionary containing data for the stan model.
 - `ìter::Int=2000`: number of sampling iterations.
 - `chains::Int=4`: number of seperate chains, each with `iter` sampling iterations.
-- `processes::Int=length(workers())`: number of parallel processes used for MCMC sampling.
+- `wp::WorkerPool`: WorkerPool containing a vector of workers for parallel MCMC runs.
 - `stan_args::AbstractString`: arguments passed to the CmdStan Interface, see Details.
 - `save_binary::AbstractString=""`: save the compiled stan binary.
 - `save_data::AbstractString=""`: save the input data in .Rdump format.
@@ -97,37 +99,31 @@ StanInterface.Stanfit
 ```
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
-              processes::Int = length(workers()), refresh::Int = 100,
+              wp::WorkerPool = WorkerPool(), refresh::Int = 100,
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
-    @assert processes <= length(workers())
 
     io = StanIO(model, data, chains, save_binary, save_data, save_result, save_diagnostics)
     setupfiles(io)
 
     try
         function run_stan(i::Int)
-	    if !isfile(io.binary_file)
-		error("binary file not found")
-	    end
-	    if !isfile(io.data_file)
-		error("data file not found")
-	    end
+	        @assert isfile(io.binary_file)
+            @assert isfile(io.data_file)
 
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
                 data file=$(io.data_file) random seed=$(rand(1:9999999)) 
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
+        
+            while !isfile(io.result_file[i])
+                sleep(0.1)
+            end
         end
         
-        pmap(run_stan, WorkerPool(workers()), 1:chains)
-        
-        while !all(isfile.(io.result_file))
-            @warn "$(io.result_file) not yet created"
-            sleep(1)
-        end
+        pmap(run_stan, wp, 1:chains)
 
         result = parse_stan_csv.(io.result_file)
 
@@ -161,32 +157,35 @@ Additional command-line arguments can be supplied via the `stan_args` argument.
 #StanInterface.Stanfit
 #```
 #"""
-#function stan(model::AbstractString, data::Dict, method::AbstractString;
-#              stan_args::AbstractString = "", save_binary::AbstractString = "",
-#              save_data::AbstractString = "", save_result::AbstractString = "",
-#              save_diagnostics::AbstractString = "")
-#    
-#    io = StanIO(model, data, 1, save_binary, save_data, save_result, save_diagnostics)
-#    setupfiles(io)
-#
-#    try
-#        run(`chmod +x $(io.binary_file)`)
-#        run(`$(io.binary_file) $method $(split(stan_args))
-#            data file=$(io.data_file) output file=$(io.result_file)`)
-#
-#        diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
-#        diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
-#        result = parse_stan_csv.(io.result_file)
-#
-#        copyfiles(io)
-#        sf = Stanfit(model, data, )
-#        return Stanfit(model, data, 0, 0, result, diagnose_output)
-#        
-#    finally
-#        removefiles(io)
-#    end
-#end
-#
+function stan(model::AbstractString, data::Dict, method::AbstractString;
+             stan_args::AbstractString = "", save_binary::AbstractString = "",
+             save_data::AbstractString = "", save_result::AbstractString = "",
+             save_diagnostics::AbstractString = "")
+   
+   io = StanIO(model, data, 1, save_binary, save_data, save_result, save_diagnostics)
+   
+   setupfiles(io)
+
+   try
+       run(`chmod +x $(io.binary_file)`)
+       run(`$(io.binary_file) $method $(split(stan_args))
+           data file=$(io.data_file) output file=$(io.result_file)`)
+
+       diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
+       diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
+       result = parse_stan_csv.(io.result_file)
+
+       copyfiles(io)
+       sf = Stanfit(model, data, 0, 0, result, diagnose_output)
+       removefiles(io)
+
+       return sf
+    
+   finally
+       removefiles(io)
+   end
+end
+
 
 """
     extract(::Stanfit)
@@ -235,6 +234,33 @@ Dict{String,Array{Float64,1}} with 2 entries:
 function extract(sf::Stanfit, pars::AbstractVector{T}) where T <: AbstractString
     d = merge(vcat, filter.((k,v)->k in pars, sf.result)...)
     return d
+end
+
+function parallel_stresstest()
+    println("running a stan model on $(nworkers()) workers in parallel.")
+
+    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.17.1", "examples", 
+                          "bernoulli", "bernoulli.stan")
+    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.17.1", "examples",
+                           "bernoulli", "bernoulli")
+
+    if !isfile(binary_path)
+        build_binary(model_path, binary_path)
+    end
+
+    @sync @distributed for i in 1:nworkers()
+        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.17.1", "examples",
+                               "bernoulli", "bernoulli")
+
+        data = Dict("N" => 5, "y" => [1,1,0,1,0])
+        sf = @suppress stan(binary_path, data)
+        
+        idx = findfirst(x -> x == myid(), workers())
+
+        sf isa StanInterface.Stanfit || error("test failed.")
+    end
+
+    println("test passed.")
 end
 
 end # module
