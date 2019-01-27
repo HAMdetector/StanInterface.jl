@@ -99,7 +99,7 @@ StanInterface.Stanfit
 ```
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
-              wp::WorkerPool = WorkerPool(), refresh::Int = 100,
+              wp::WorkerPool = WorkerPool(workers()), refresh::Int = 100,
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
