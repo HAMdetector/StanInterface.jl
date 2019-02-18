@@ -109,7 +109,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
     try
         function run_stan(i::Int)
-	        @assert isfile(io.binary_file)
+	    @assert isfile(io.binary_file)
             @assert isfile(io.data_file)
 
             run(`chmod +x $(io.binary_file)`)
