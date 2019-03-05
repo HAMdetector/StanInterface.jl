@@ -1,10 +1,12 @@
 module StanInterface
 
-using DelimitedFiles, Distributed, SharedArrays, Test, Suppressor
+export stan, extract, build_binary, Stanfit
+
+using DelimitedFiles, Distributed, Test, Suppressor, Statistics
 
 include("StanIO.jl")
+include("r_hat.jl")
 
-export stan, extract, build_binary, Stanfit
 cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.17.1")
 
 struct Stanfit
@@ -100,6 +102,7 @@ StanInterface.Stanfit
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
               wp::WorkerPool = WorkerPool(workers()), refresh::Int = 100,
+              seed::Int = rand(1:9999999),
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
@@ -114,7 +117,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
-                data file=$(io.data_file) random seed=$(rand(1:9999999)) 
+                data file=$(io.data_file) random seed=$(seed - 1 + i) 
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
         
@@ -158,9 +161,10 @@ Additional command-line arguments can be supplied via the `stan_args` argument.
 #```
 #"""
 function stan(model::AbstractString, data::Dict, method::AbstractString;
-             stan_args::AbstractString = "", save_binary::AbstractString = "",
-             save_data::AbstractString = "", save_result::AbstractString = "",
-             save_diagnostics::AbstractString = "")
+              seed::Int = rand(1:9999999),
+              stan_args::AbstractString = "", save_binary::AbstractString = "",
+              save_data::AbstractString = "", save_result::AbstractString = "",
+              save_diagnostics::AbstractString = "")
    
    io = StanIO(model, data, 1, save_binary, save_data, save_result, save_diagnostics)
    
@@ -168,7 +172,7 @@ function stan(model::AbstractString, data::Dict, method::AbstractString;
 
    try
        run(`chmod +x $(io.binary_file)`)
-       run(`$(io.binary_file) $method $(split(stan_args))
+       run(`$(io.binary_file) $method $(split(stan_args)) random seed=$(seed) 
            data file=$(io.data_file) output file=$(io.result_file)`)
 
        diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
