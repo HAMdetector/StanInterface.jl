@@ -1,9 +1,5 @@
 using StanInterface, Test, Statistics, Suppressor
 
-include("r_hat.jl")
-
-# addprocs(4)
-# @everywhere using StanInterface
 
 @testset "run cmdstan bernoulli example" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
@@ -24,3 +20,5 @@ end
     @suppress build_binary(model_path, binary_path)
     @test isfile(binary_path)
 end
+
+include("r_hat.jl")

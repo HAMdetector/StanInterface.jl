@@ -29,3 +29,15 @@ end
     expected_R_hat = 1.7029386365926393
     @test StanInterface.R_hat(x) ≈ expected_R_hat
 end
+
+@testset "R_hat(::Stanfit)" begin
+    data = Dict("N" => 5, "y" => [1,1,1,1,1])
+    model_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.17.1", 
+                          "examples", "bernoulli", "bernoulli.stan")
+                         
+    sf = @suppress stan(model_path, data)
+
+    r_hats = R_hat(sf)
+    @test r_hats isa Dict{String, Float64}
+    @test length(r_hats) == 2
+end

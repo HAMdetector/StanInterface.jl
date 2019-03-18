@@ -1,11 +1,10 @@
 module StanInterface
 
-export stan, extract, build_binary, Stanfit
+export stan, extract, build_binary, Stanfit, R_hat
 
 using DelimitedFiles, Distributed, Test, Suppressor, Statistics
 
 include("StanIO.jl")
-include("r_hat.jl")
 
 cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.17.1")
 
@@ -267,4 +266,5 @@ function parallel_stresstest()
     println("test passed.")
 end
 
+include("r_hat.jl")
 end # module

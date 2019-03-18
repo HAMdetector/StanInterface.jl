@@ -31,3 +31,19 @@ function R_hat(x::AbstractVector{T}) where T <: AbstractVector{<: Real}
 
     return sqrt(variance_estimator / W)
 end
+
+function R_hat(sf::Stanfit)
+    N = length(sf.result)
+    parameters = collect(keys(sf.result[1]))
+    excluded_parameters = ["stepsize__", "treedepth__", "n_leapfrog__", "energy__",
+                           "accept_stat__", "divergent__"]
+    filter!(x -> x ∉ excluded_parameters, parameters)
+    d = Dict{String, Float64}()
+
+    for p in parameters
+        v = [r[p] for r in sf.result]
+        d[p] = R_hat(v)
+    end
+
+    return d
+end
