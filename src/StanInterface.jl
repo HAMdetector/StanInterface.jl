@@ -1,8 +1,8 @@
 module StanInterface
 
-export stan, extract, build_binary, Stanfit, R_hat
+export stan, extract, build_binary, Stanfit, R_hat, N_eff
 
-using DelimitedFiles, Distributed, Test, Suppressor, Statistics
+using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 
 include("StanIO.jl")
 
@@ -267,4 +267,5 @@ function parallel_stresstest()
 end
 
 include("r_hat.jl")
+include("n_eff.jl")
 end # module

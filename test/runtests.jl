@@ -1,5 +1,4 @@
-using StanInterface, Test, Statistics, Suppressor
-
+using StanInterface, Test, Statistics, Suppressor, Random, Distributions
 
 @testset "run cmdstan bernoulli example" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
@@ -22,3 +21,4 @@ end
 end
 
 include("r_hat.jl")
+include("n_eff.jl")
