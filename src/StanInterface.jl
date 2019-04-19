@@ -41,6 +41,10 @@ function build_binary(model::AbstractString, path::AbstractString)
     end
 end
 
+function build_binary(model::AbstractString)
+    build_binary(model, splitext(model)[1])
+end
+
 function parse_stan_csv(stan_csv::AbstractString)
     @assert isfile(stan_csv)
     samples, parameters = readdlm(expanduser(stan_csv), ',', header = true, comments = true)
