@@ -5,21 +5,16 @@
 ┌ Warning: special characters "#{}()[]<>|&*?~;" should now be quoted in commands
 │   caller = #shell_parse#351(::String, ::Function, ::String, ::Bool) at shell.jl:100
 └ @ Base ./shell.jl:100
-[ Info: Attempting to create directory /home/habermann/sync/StanInterface
-[ Info: Directory /home/habermann/sync/StanInterface already exists
-[ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 already exists
-[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1
-ERROR: LoadError: SystemError: opening file "/home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi/make/local": No such file or directory
+[ Info: Attempting to create directory /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi
+ERROR: LoadError: Directory /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi was not created successfully (Tried to run BinDeps.SynchronousStepCollection(Any[`cp -r /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 '/home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi)'`], "", "") )
 Stacktrace:
- [1] #systemerror#43(::Nothing, ::Function, ::String, ::Bool) at ./error.jl:134
- [2] systemerror at ./error.jl:134 [inlined]
- [3] #open#309(::Nothing, ::Nothing, ::Nothing, ::Bool, ::Nothing, ::Function, ::String) at ./iostream.jl:283
- [4] #open at ./none:0 [inlined]
- [5] open(::String, ::String) at ./iostream.jl:339
- [6] top-level scope at /home/habermann/sync/StanInterface/deps/build.jl:50
- [7] include at ./boot.jl:326 [inlined]
- [8] include_relative(::Module, ::String) at ./loading.jl:1038
- [9] include(::Module, ::String) at ./sysimg.jl:29
- [10] include(::String) at ./client.jl:403
- [11] top-level scope at none:0
+ [1] error(::String) at ./error.jl:33
+ [2] run(::BinDeps.DirectoryRule) at /home/habermann/.julia/packages/BinDeps/ZEval/src/BinDeps.jl:494
+ [3] run(::BinDeps.SynchronousStepCollection) at /home/habermann/.julia/packages/BinDeps/ZEval/src/BinDeps.jl:521
+ [4] top-level scope at /home/habermann/sync/StanInterface/deps/build.jl:48
+ [5] include at ./boot.jl:326 [inlined]
+ [6] include_relative(::Module, ::String) at ./loading.jl:1038
+ [7] include(::Module, ::String) at ./sysimg.jl:29
+ [8] include(::String) at ./client.jl:403
+ [9] top-level scope at none:0
 in expression starting at /home/habermann/sync/StanInterface/deps/build.jl:30
