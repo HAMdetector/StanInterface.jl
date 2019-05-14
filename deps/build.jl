@@ -28,9 +28,9 @@ end
 
 if mpi_enabled
     if Sys.isunix()
-    cp_mpi_dir = @build_steps begin
+        cp_mpi_dir = @build_steps begin
         BinDeps.DirectoryRule(cmdstan_mpi_dir, @build_steps begin
-            `cp -r $cmdstan_dir $(cmdstan_dir * "_mpi")`
+            `cp -r $cmdstan_dir $cmdstan_mpi_dir)`
         end)
         @build_steps begin
             ChangeDirectory(cmdstan_mpi_dir)
