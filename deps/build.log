@@ -1,4 +1,22 @@
+rm -f -r doc
+cd src/docs/cmdstan-guide; rm -f *.brf *.aux *.bbl *.blg *.log *.toc *.pdf *.out *.idx *.ilg *.ind *.cb *.cb2 *.upa
+rm -f -r test
+rm -f 
+rm -f 
+  removing dependency files
+  cleaning sundials targets
+rm -f 
+  cleaning mpi targets
+rm -f 
+rm -f -r 
+rm -f -r bin
+rm -f 
 [ Info: Attempting to create directory /home/habermann/sync/StanInterface
 [ Info: Directory /home/habermann/sync/StanInterface already exists
-[ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.17.1 already exists
-[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.17.1
+[ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 already exists
+[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1
+[ Info: Attempting to create directory /home/habermann/sync/StanInterface
+[ Info: Directory /home/habermann/sync/StanInterface already exists
+[ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 already exists
+[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1
+[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi
