@@ -20,11 +20,12 @@ if Sys.isunix()
     run(install_cmdstan)
 end
 
-mpi_enabled = try success(`mpicxx -show`) 
-    true 
-catch 
-    false 
-end
+# mpi_enabled = try success(`mpicxx -show`) 
+#     true 
+# catch 
+#     false 
+# end
+mpi_enabled = true
 
 if mpi_enabled
     if Sys.isunix()
@@ -44,7 +45,7 @@ if mpi_enabled
         `make clean-all`
     end
 
-    run(install_cmdstan)
+    run(cp_mpi_dir)
 
     io = open(joinpath(cmdstan_mpi_dir, "make", "local"), "w")
     println(io, "STAN_MPI=true")

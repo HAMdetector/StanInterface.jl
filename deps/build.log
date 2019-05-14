@@ -1,22 +1,25 @@
-rm -f -r doc
-cd src/docs/cmdstan-guide; rm -f *.brf *.aux *.bbl *.blg *.log *.toc *.pdf *.out *.idx *.ilg *.ind *.cb *.cb2 *.upa
-rm -f -r test
-rm -f 
-rm -f 
-  removing dependency files
-  cleaning sundials targets
-rm -f 
-  cleaning mpi targets
-rm -f 
-rm -f -r 
-rm -f -r bin
-rm -f 
 [ Info: Attempting to create directory /home/habermann/sync/StanInterface
 [ Info: Directory /home/habermann/sync/StanInterface already exists
 [ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 already exists
 [ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1
+┌ Warning: special characters "#{}()[]<>|&*?~;" should now be quoted in commands
+│   caller = #shell_parse#351(::String, ::Function, ::String, ::Bool) at shell.jl:100
+└ @ Base ./shell.jl:100
 [ Info: Attempting to create directory /home/habermann/sync/StanInterface
 [ Info: Directory /home/habermann/sync/StanInterface already exists
 [ Info: Path /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1 already exists
 [ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1
-[ Info: Changing directory to /home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi
+ERROR: LoadError: SystemError: opening file "/home/habermann/sync/StanInterface/deps/cmdstan-2.19.1_mpi/make/local": No such file or directory
+Stacktrace:
+ [1] #systemerror#43(::Nothing, ::Function, ::String, ::Bool) at ./error.jl:134
+ [2] systemerror at ./error.jl:134 [inlined]
+ [3] #open#309(::Nothing, ::Nothing, ::Nothing, ::Bool, ::Nothing, ::Function, ::String) at ./iostream.jl:283
+ [4] #open at ./none:0 [inlined]
+ [5] open(::String, ::String) at ./iostream.jl:339
+ [6] top-level scope at /home/habermann/sync/StanInterface/deps/build.jl:50
+ [7] include at ./boot.jl:326 [inlined]
+ [8] include_relative(::Module, ::String) at ./loading.jl:1038
+ [9] include(::Module, ::String) at ./sysimg.jl:29
+ [10] include(::String) at ./client.jl:403
+ [11] top-level scope at none:0
+in expression starting at /home/habermann/sync/StanInterface/deps/build.jl:30
