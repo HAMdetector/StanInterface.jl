@@ -7,6 +7,14 @@ using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 include("StanIO.jl")
 
 cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.19.1")
+mpi_enabled = try success(`mpicxx -show`) 
+    true 
+catch 
+    false 
+end
+
+cmdstan_mpi_path = joinpath(dirname(cmdstan_path), basename(cmdstan_path) * "_mpi")
+
 
 struct Stanfit
     model::String
@@ -24,13 +32,18 @@ end
 Build a stan executable binary from a .stan file.
 ```
 """
-function build_binary(model::AbstractString, path::AbstractString)
+function build_binary(model::AbstractString, path::AbstractString; mpi_enabled = false)
     temppath = tempname()
     cp(model, temppath * ".stan")
     cwd = pwd()
 
     try
-        cd(cmdstan_path)
+        if !mpi_enabled
+            cd(cmdstan_path)
+        else
+            cd(cmdstan_mpi_path)
+        end
+
         run(`make $temppath`)
         cp(temppath, expanduser(path), force = true)
 
@@ -41,8 +54,8 @@ function build_binary(model::AbstractString, path::AbstractString)
     end
 end
 
-function build_binary(model::AbstractString)
-    build_binary(model, splitext(model)[1])
+function build_binary(model::AbstractString; mpi_enabled = false)
+    build_binary(model, splitext(model)[1], mpi_enabled = mpi_enabled)
 end
 
 function parse_stan_csv(stan_csv::AbstractString)

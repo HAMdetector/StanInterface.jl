@@ -20,12 +20,11 @@ if Sys.isunix()
     run(install_cmdstan)
 end
 
-# mpi_enabled = try success(`mpicxx -show`) 
-#     true 
-# catch 
-#     false 
-# end
-mpi_enabled = true
+mpi_enabled = try success(`mpicxx -show`) 
+    true 
+catch 
+    false 
+end
 
 if mpi_enabled
     if Sys.isunix()
