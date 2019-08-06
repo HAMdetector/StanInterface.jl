@@ -117,8 +117,8 @@ StanInterface.Stanfit
 ```
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
-              wp::WorkerPool = WorkerPool(workers()), refresh::Int = 100,
-              seed::Int = rand(1:9999999),
+              warmup::Int = 1000, wp::WorkerPool = WorkerPool(workers()), 
+              refresh::Int = 100,  seed::Int = rand(1:9999999),
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
@@ -133,6 +133,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
+                num_warmup=$warmup
                 data file=$(io.data_file) random seed=$(seed - 1 + i) 
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
