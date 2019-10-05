@@ -6,7 +6,7 @@ using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 
 include("StanIO.jl")
 
-cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.19.1")
+cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.20.0")
 mpi_enabled = try success(`mpicxx -show`) 
     true 
 catch 
@@ -260,9 +260,9 @@ end
 function parallel_stresstest()
     println("running a stan model on $(nworkers()) workers in parallel.")
 
-    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.19.1", "examples", 
+    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples", 
                           "bernoulli", "bernoulli.stan")
-    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.19.1", "examples",
+    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples",
                            "bernoulli", "bernoulli")
 
     if !isfile(binary_path)
@@ -270,7 +270,7 @@ function parallel_stresstest()
     end
 
     @sync @distributed for i in 1:nworkers()
-        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.19.1", "examples",
+        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples",
                                "bernoulli", "bernoulli")
 
         data = Dict("N" => 5, "y" => [1,1,0,1,0])

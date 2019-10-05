@@ -2,8 +2,8 @@ using BinDeps
 
 @BinDeps.setup
 
-cmdstan_src = joinpath(@__DIR__, "downloads", "cmdstan-2.19.1.tar.gz")
-cmdstan_dir = joinpath(@__DIR__, "cmdstan-2.19.1")
+cmdstan_src = joinpath(@__DIR__, "downloads", "cmdstan-2.20.0.tar.gz")
+cmdstan_dir = joinpath(@__DIR__, "cmdstan-2.20.0")
 cmdstan_mpi_dir = joinpath(dirname(cmdstan_dir), basename(cmdstan_dir) * "_mpi")
 
 if Sys.isunix()

@@ -14,7 +14,7 @@ end
 
 @testset "N_eff(::Stanfit)" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
-    model_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.19.1", 
+    model_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.20.0", 
                           "examples", "bernoulli", "bernoulli.stan")
                          
     sf = @suppress stan(model_path, data)
