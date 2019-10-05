@@ -43,7 +43,7 @@ function build_binary(model::AbstractString, path::AbstractString; mpi_enabled =
         else
             cd(cmdstan_mpi_path)
         end
-
+        
         run(`make $temppath`)
         cp(temppath, expanduser(path), force = true)
 
