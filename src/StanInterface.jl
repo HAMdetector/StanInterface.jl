@@ -6,15 +6,7 @@ using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 
 include("StanIO.jl")
 
-cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.20.0")
-mpi_enabled = try success(`mpicxx -show`) 
-    true 
-catch 
-    false 
-end
-
-cmdstan_mpi_path = joinpath(dirname(cmdstan_path), basename(cmdstan_path) * "_mpi")
-
+cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.21.0")
 
 struct Stanfit
     model::String
@@ -32,30 +24,22 @@ end
 Build a stan executable binary from a .stan file.
 ```
 """
-function build_binary(model::AbstractString, path::AbstractString; mpi_enabled = false)
+function build_binary(model::AbstractString, path::AbstractString)
     temppath = tempname()
     cp(model, temppath * ".stan")
-    cwd = pwd()
 
-    try
-        if !mpi_enabled
-            cd(cmdstan_path)
-        else
-            cd(cmdstan_mpi_path)
-        end
-        
-        run(`make $temppath`)
+    try        
+        cd(() -> run(`make $temppath`), cmdstan_path)
         cp(temppath, expanduser(path), force = true)
 
         rm.(temppath .* [".hpp", ".stan"], force = true)
     finally
         rm.(temppath .* [".hpp", ".stan"], force = true)
-        cd(cwd)
     end
 end
 
-function build_binary(model::AbstractString; mpi_enabled = false)
-    build_binary(model, splitext(model)[1], mpi_enabled = mpi_enabled)
+function build_binary(model::AbstractString)
+    build_binary(model, splitext(model)[1])
 end
 
 function parse_stan_csv(stan_csv::AbstractString)
@@ -260,9 +244,9 @@ end
 function parallel_stresstest()
     println("running a stan model on $(nworkers()) workers in parallel.")
 
-    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples", 
+    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples", 
                           "bernoulli", "bernoulli.stan")
-    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples",
+    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples",
                            "bernoulli", "bernoulli")
 
     if !isfile(binary_path)
@@ -270,7 +254,7 @@ function parallel_stresstest()
     end
 
     @sync @distributed for i in 1:nworkers()
-        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples",
+        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples",
                                "bernoulli", "bernoulli")
 
         data = Dict("N" => 5, "y" => [1,1,0,1,0])

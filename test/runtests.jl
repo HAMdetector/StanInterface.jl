@@ -2,7 +2,7 @@ using StanInterface, Test, Statistics, Suppressor, Random, Distributions
 
 @testset "run cmdstan bernoulli example" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
-    model_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.20.0", 
+    model_path = joinpath(@__DIR__, "..", "deps", "cmdstan-2.21.0", 
                           "examples", "bernoulli", "bernoulli.stan")
                          
     sf = @suppress stan(model_path, data)
@@ -10,7 +10,7 @@ using StanInterface, Test, Statistics, Suppressor, Random, Distributions
 end
 
 @testset "build stan binary" begin
-    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.20.0", "examples", 
+    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples", 
                           "bernoulli", "bernoulli.stan")
     binary_path = joinpath(tempdir(), "bernoulli")
     
