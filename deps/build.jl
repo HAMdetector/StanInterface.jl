@@ -1,3 +1,5 @@
+# TODO: update build.jl to enable threading by default
+
 using BinDeps
 
 @BinDeps.setup
