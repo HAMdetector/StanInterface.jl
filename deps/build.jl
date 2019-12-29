@@ -1,5 +1,3 @@
-# TODO: update build.jl to enable threading by default
-
 using BinDeps
 
 @BinDeps.setup
@@ -12,7 +10,9 @@ if Sys.isunix()
         FileUnpacker(cmdstan_src, @__DIR__, "")
         @build_steps begin
             ChangeDirectory(cmdstan_dir)
+
             FileRule(joinpath(cmdstan_dir, "bin", "stanc"), @build_steps begin
+                `echo "CXXFLAGS += -DSTAN_THREADS" > make/local`
                 `make build`
             end)
         end
