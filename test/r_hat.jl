@@ -32,8 +32,8 @@ end
 
 @testset "R_hat(::Stanfit)" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
-    model_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.21.0", 
-                          "examples", "bernoulli", "bernoulli.stan")
+    model_path = joinpath(StanInterface.CMDSTAN_PATH, 
+        "examples", "bernoulli", "bernoulli.stan")
                          
     sf = @suppress stan(model_path, data)
 

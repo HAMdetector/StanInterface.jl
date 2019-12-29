@@ -6,7 +6,7 @@ using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 
 include("StanIO.jl")
 
-cmdstan_path = joinpath(dirname(pathof(StanInterface)), "..", "deps", "cmdstan-2.21.0")
+const CMDSTAN_PATH = ENV["JULIA_CMDSTAN_HOME"]
 
 struct Stanfit
     model::String
@@ -29,7 +29,7 @@ function build_binary(model::AbstractString, path::AbstractString)
     cp(model, temppath * ".stan")
 
     try        
-        cd(() -> run(`make $temppath`), cmdstan_path)
+        cd(() -> run(`make $temppath`), CMDSTAN_PATH)
         cp(temppath, expanduser(path), force = true)
 
         rm.(temppath .* [".hpp", ".stan"], force = true)
@@ -131,7 +131,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
         result = parse_stan_csv.(io.result_file)
 
-        diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
+        diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
         diagnose_output = read(`$diagnose_binary $(io.result_file)`, String)
     
         copyfiles(io)
@@ -176,7 +176,7 @@ function stan(model::AbstractString, data::Dict, method::AbstractString;
        run(`$(io.binary_file) $method $(split(stan_args)) random seed=$(seed) 
            data file=$(io.data_file) output file=$(io.result_file)`)
 
-       diagnose_binary = joinpath(cmdstan_path, "bin/diagnose")
+       diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
        diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
        result = parse_stan_csv.(io.result_file)
 
