@@ -112,13 +112,13 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
     try
         function run_stan(i::Int)
-	    @assert isfile(io.binary_file)
+	        @assert isfile(io.binary_file)
             @assert isfile(io.data_file)
 
             run(`chmod +x $(io.binary_file)`)
             run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
                 num_warmup=$warmup
-                data file=$(io.data_file) random seed=$(seed - 1 + i) 
+                data file=$(io.data_file) random seed=$(seed) 
                 output refresh=$refresh file=$(io.result_file[i]) 
                 id=$i`)
         
@@ -141,7 +141,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
         return sf
     finally
-        removefiles(io)
+        #removefiles(io)
     end
 end
 
@@ -176,8 +176,8 @@ function stan(model::AbstractString, data::Dict, method::AbstractString;
        run(`$(io.binary_file) $method $(split(stan_args)) random seed=$(seed) 
            data file=$(io.data_file) output file=$(io.result_file)`)
 
-       diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
-       diagnose_output = readstring(`$diagnose_binary $(io.result_file)`)
+       #diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
+       diagnose_output = ""#readstring(`$diagnose_binary $(io.result_file)`)
        result = parse_stan_csv.(io.result_file)
 
        copyfiles(io)
@@ -237,7 +237,7 @@ Dict{String,Array{Float64,1}} with 2 entries:
 ```
 """
 function extract(sf::Stanfit, pars::AbstractVector{T}) where T <: AbstractString
-    d = merge(vcat, filter.((k,v)->k in pars, sf.result)...)
+    d = merge(vcat, filter.((k,v) -> k in pars, sf.result)...)
     return d
 end
 
