@@ -1,3 +1,4 @@
 deps/cmdstan*
 deps/build.log
 Manifest.toml
+.vscode

@@ -141,7 +141,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
         return sf
     finally
-        #removefiles(io)
+        removefiles(io)
     end
 end
 
