@@ -1,6 +1,6 @@
 # Installation
 
-1. Install [CmdStan](https://github.com/stan-dev/cmdstan/tags).
+1. Install CmdStan [label](https://github.com/stan-dev/cmdstan/tags).
 2. set the JULIA_CMDSTAN_HOME environment variable to the CmdStan root directory
     (= the directory containing the bin, lib, and make folder)
 3. clone the respository to a location you prefer:
