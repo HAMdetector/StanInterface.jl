@@ -101,7 +101,8 @@ StanInterface.Stanfit
 ```
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
-              warmup::Int = 1000, wp::WorkerPool = WorkerPool(workers()), 
+              warmup::Int = 1000, ntasks = chains, 
+              nthreads::Int = max(1, Int(Threads.nthreads() / chains)), 
               refresh::Int = 100,  seed::Int = rand(1:9999999),
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
@@ -111,23 +112,19 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
     setupfiles(io)
 
     try
-        function run_stan(i::Int)
+        function launch_stan(i::Int)
 	        @assert isfile(io.binary_file)
             @assert isfile(io.data_file)
 
-            run(`chmod +x $(io.binary_file)`)
-            run(`$(io.binary_file) sample num_samples=$iter $(split(stan_args)) 
+            run(`env STAN_NUM_THREADS=$nthreads $(io.binary_file) 
+                sample num_samples=$iter $(split(stan_args)) 
                 num_warmup=$warmup
                 data file=$(io.data_file) random seed=$(seed) 
                 output refresh=$refresh file=$(io.result_file[i]) 
-                id=$i`)
-        
-            while !isfile(io.result_file[i])
-                sleep(0.1)
-            end
+                id=$i`, wait = true)
         end
         
-        pmap(run_stan, wp, 1:chains)
+        asyncmap(launch_stan, 1:chains, ntasks = ntasks)
 
         result = parse_stan_csv.(io.result_file)
 
@@ -176,8 +173,7 @@ function stan(model::AbstractString, data::Dict, method::AbstractString;
        run(`$(io.binary_file) $method $(split(stan_args)) random seed=$(seed) 
            data file=$(io.data_file) output file=$(io.result_file)`)
 
-       #diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
-       diagnose_output = ""#readstring(`$diagnose_binary $(io.result_file)`)
+       diagnose_output = ""
        result = parse_stan_csv.(io.result_file)
 
        copyfiles(io)
@@ -239,33 +235,6 @@ Dict{String,Array{Float64,1}} with 2 entries:
 function extract(sf::Stanfit, pars::AbstractVector{T}) where T <: AbstractString
     d = merge(vcat, filter.((k,v) -> k in pars, sf.result)...)
     return d
-end
-
-function parallel_stresstest()
-    println("running a stan model on $(nworkers()) workers in parallel.")
-
-    model_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples", 
-                          "bernoulli", "bernoulli.stan")
-    binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples",
-                           "bernoulli", "bernoulli")
-
-    if !isfile(binary_path)
-        build_binary(model_path, binary_path)
-    end
-
-    @sync @distributed for i in 1:nworkers()
-        binary_path = joinpath(dirname(@__DIR__), "deps", "cmdstan-2.21.0", "examples",
-                               "bernoulli", "bernoulli")
-
-        data = Dict("N" => 5, "y" => [1,1,0,1,0])
-        sf = @suppress stan(binary_path, data)
-        
-        idx = findfirst(x -> x == myid(), workers())
-
-        sf isa StanInterface.Stanfit || error("test failed.")
-    end
-
-    println("test passed.")
 end
 
 include("r_hat.jl")
