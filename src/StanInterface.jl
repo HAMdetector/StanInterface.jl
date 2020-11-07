@@ -6,7 +6,7 @@ using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
 
 include("StanIO.jl")
 
-const CMDSTAN_PATH = ENV["JULIA_CMDSTAN_HOME"]
+CMDSTAN_PATH = ENV["JULIA_CMDSTAN_HOME"]
 
 struct Stanfit
     model::String
@@ -116,7 +116,7 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 	        @assert isfile(io.binary_file)
             @assert isfile(io.data_file)
 
-            run(`env STAN_NUM_THREADS=$nthreads $(io.binary_file) 
+            run(`env STAN_NUM_THREADS=$nthreads $(io.binary_file)
                 sample num_samples=$iter $(split(stan_args)) 
                 num_warmup=$warmup
                 data file=$(io.data_file) random seed=$(seed) 
