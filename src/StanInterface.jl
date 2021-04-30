@@ -102,8 +102,9 @@ StanInterface.Stanfit
 """
 function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int = 4,
               warmup::Int = 1000, ntasks = chains, 
-              nthreads::Int = max(1, Int(Threads.nthreads() / chains)), 
+              nthreads::Int = -1, 
               refresh::Int = 100,  seed::Int = rand(1:9999999),
+			  wp::AbstractWorkerPool = default_worker_pool(),
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
@@ -124,7 +125,11 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
                 id=$i`, wait = true)
         end
         
-        asyncmap(launch_stan, 1:chains, ntasks = ntasks)
+		if length(wp) == 0
+        	asyncmap(launch_stan, 1:chains, ntasks = ntasks)
+		else
+			pmap(launch_stan, wp, 1:chains)
+		end
 
         result = parse_stan_csv.(io.result_file)
 
