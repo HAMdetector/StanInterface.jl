@@ -2,7 +2,7 @@ module StanInterface
 
 export stan, extract, build_binary, Stanfit, R_hat, N_eff
 
-using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase
+using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase, Mmap, CSV
 
 include("StanIO.jl")
 
@@ -13,7 +13,7 @@ struct Stanfit
     data::Dict{String, Any}
     iter::Int
     chains::Int
-    result::Array{Dict{String, Vector{Float64}}}
+    result::Array{Dict{String, Any}}
     diagnostics::String	
 end
 
@@ -44,14 +44,49 @@ end
 
 function parse_stan_csv(stan_csv::AbstractString)
     @assert isfile(stan_csv)
-    samples, parameters = readdlm(expanduser(stan_csv), ',', header = true, comments = true)
+
+    parameters = String[]
+    n_samples = -1 # offset 1 additional parameter line
+    mmap_file = splitext(stan_csv)[1] * "_mem.bin"
     
-    sample_dict = Dict{String, Array{Float64, 1}}()
-    for i = 1:size(samples,2)
-        sample_dict[parameters[i]] = samples[:,i]
+    try
+        open(mmap_file, "w+") do io
+            for line in readlines(stan_csv)
+                startswith(line, '#') && continue
+                n_samples += 1
+                
+                if startswith(line, "lp__")
+                    parameters = split(line, ',')
+                else
+                    write(io, parse.(Float64, split(line, ',')))
+                end
+            end
+        end
+ 
+        sample_dict = Dict{String, SubArray}()
+        M = Mmap.mmap(mmap_file, Matrix{Float64}, (n_samples, length(parameters)))
+        for i = 1:size(M, 2)
+            sample_dict[parameters[i]] = @view M[:,i]
+        end
+
+        return sample_dict
+    finally
+        rm(splitext(stan_csv)[1] * "_mem.bin", force = true)
+    end
+end
+
+function parse_stan_options(stan_csv::AbstractString)
+    @assert isfile(stan_csv)
+    s = ""
+
+    open(stan_csv) do io
+        for line in eachline(io)
+            startswith(line, '#') || continue
+            s = s * line * "\n"
+        end
     end
 
-    return sample_dict
+    return s
 end
 
 function combine_stan_csv(outputfile::AbstractString, 
@@ -135,12 +170,18 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
         diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
         diagnose_output = read(`$diagnose_binary $(io.result_file)`, String)
-    
+        
+        diagnostics = ""
+        for file in io.result_file
+            diagnostics = diagnostics * parse_stan_options(file)
+        end
+        diagnostics = diagnostics * diagnose_output
+
         copyfiles(io)
 
-        sf = Stanfit(model, data, iter, chains, result, diagnose_output)
+        sf = Stanfit(model, data, iter, chains, result, diagnostics)
         removefiles(io) 
-
+        
         return sf
     finally
         removefiles(io)
