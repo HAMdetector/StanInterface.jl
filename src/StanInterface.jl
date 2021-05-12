@@ -58,13 +58,16 @@ function parse_stan_csv(stan_csv::AbstractString)
                 if startswith(line, "lp__")
                     parameters = split(line, ',')
                 else
+                    # Mmaped elements are written in column-major order!
                     write(io, parse.(Float64, split(line, ',')))
                 end
             end
         end
  
         sample_dict = Dict{String, SubArray}()
-        M = Mmap.mmap(mmap_file, Matrix{Float64}, (n_samples, length(parameters)))
+        M = Mmap.mmap(mmap_file, Matrix{Float64}, (length(parameters), n_samples)) |>
+            permutedims # transpose M as it was initially written in column-major order
+
         for i = 1:size(M, 2)
             sample_dict[parameters[i]] = @view M[:,i]
         end
