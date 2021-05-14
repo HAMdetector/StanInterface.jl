@@ -142,7 +142,8 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
               warmup::Int = 1000, ntasks = chains, 
               nthreads::Int = -1, 
               refresh::Int = 100,  seed::Int = rand(1:9999999),
-			  wp::AbstractWorkerPool = default_worker_pool(),
+              wp::AbstractWorkerPool = default_worker_pool(),
+              run_diagnostics::Bool = true,
               stan_args::AbstractString = "", save_binary::AbstractString = "",
               save_data::AbstractString = "", save_result::AbstractString = "",
               save_diagnostics::AbstractString = "")
@@ -172,7 +173,11 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
         result = parse_stan_csv.(io.result_file)
 
         diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
-        diagnose_output = read(`$diagnose_binary $(io.result_file)`, String)
+        if run_diagnostics
+            diagnose_output = read(`$diagnose_binary $(io.result_file)`, String)
+        else
+            diagnose_output = ""
+        end
         
         diagnostics = ""
         for file in io.result_file
