@@ -1,5 +1,5 @@
 # between-chain variance 
-function B_variance(x::AbstractVector{T}) where T <: AbstractVector{<: Real}
+function B_variance(x)
     chain_means = [mean(chain) for chain in x]
     mean_chain_means = mean(chain_means)
 
@@ -10,15 +10,16 @@ function B_variance(x::AbstractVector{T}) where T <: AbstractVector{<: Real}
 end
 
 # within-chain variance
-function W_variance(x::AbstractVector{T}) where T <: AbstractVector{<: Real}
+function W_variance(x)
     return mean(var(chain) for chain in x)
 end
 
-function R_hat(x::AbstractVector{T}) where T <: AbstractVector{<: Real}
-    split_chains = Vector{T}()
+function R_hat(x)
+    split_chains = Vector{Vector{Float64}}()
 
     for (i, chain) in enumerate(x)
         half_N = floor(Int, length(chain) / 2)
+        
         push!(split_chains, chain[1:half_N])
         push!(split_chains, chain[(half_N + 1):end])
     end

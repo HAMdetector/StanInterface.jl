@@ -1,4 +1,4 @@
-@testset "B_variance(::AbstractVector{AbstractVector{<: Real}})" begin
+@testset "B_variance" begin
     a = [1, 1, 1, 1, 0, 0, 0, 0, 1]
     b = [0, 1, 0, 1, 1, 1, 1, 1, 1]
     c = [0, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -11,7 +11,7 @@
     @test StanInterface.B_variance([a, b, c, d]) ≈ B_expected
 end
 
-@testset "W_variance(::AbstractVector{AbstractVector{<: Real}})" begin
+@testset "W_variance" begin
     a = [1, 1, 1, 1, 0, 0, 0, 0, 1]
     b = [0, 1, 0, 1, 1, 1, 1, 1, 1]
     c = [0, 1, 1, 1, 1, 1, 1, 1, 1]
@@ -23,7 +23,7 @@ end
     @test StanInterface.W_variance([a, b, c, d]) ≈ W_expected
 end
 
-@testset "R_hat(::AbstractVector{AbstractVector{<: Real}})" begin
+@testset "R_hat" begin
     x = [[0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4], [0.1, 0.2, 0.3, 0.4]]
 
     expected_R_hat = 1.7029386365926393
