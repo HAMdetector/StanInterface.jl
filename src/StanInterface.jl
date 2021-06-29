@@ -2,11 +2,12 @@ module StanInterface
 
 export stan, extract, build_binary, Stanfit, R_hat, N_eff
 
-using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase, Mmap, CSV
+using DelimitedFiles, Distributed, Test, Suppressor, Statistics, StatsBase, Mmap, CSV,
+    CmdStanBinaries_jll
 
 include("StanIO.jl")
 
-CMDSTAN_PATH = ENV["JULIA_CMDSTAN_HOME"]
+CMDSTAN_PATH = "JULIA_CMDSTAN_HOME" in keys(ENV) ? ENV["JULIA_CMDSTAN_HOME"] : ""
 
 struct Stanfit
     model::String
@@ -172,9 +173,8 @@ function stan(model::AbstractString, data::Dict; iter::Int = 2000, chains::Int =
 
         result = parse_stan_csv.(io.result_file)
 
-        diagnose_binary = joinpath(CMDSTAN_PATH, "bin/diagnose")
         if run_diagnostics
-            diagnose_output = read(`$diagnose_binary $(io.result_file)`, String)
+            diagnose_output = read(`$(diagnose()) $(io.result_file)`, String)
         else
             diagnose_output = ""
         end
