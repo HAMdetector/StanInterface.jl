@@ -24,8 +24,6 @@ version = "0.10.9"
 [[CmdStanBinaries_jll]]
 deps = ["Artifacts", "JLLWrappers", "Libdl", "Pkg"]
 git-tree-sha1 = "2103f3355ccca1eefdcec056d084f7ba4d43a459"
-repo-rev = "v0.3.0"
-repo-url = "https://github.com/HAMdetector/CmdStanBinaries_jll.jl.git"
 uuid = "eecc378a-c28e-5a81-8849-a983a4161162"
 version = "0.1.0+0"
 
