@@ -5,7 +5,7 @@
     d = [1, 0, 1, 0, 1, 0, 1, 0, 1]
 
     theta_m = mean([mean(a), mean(b), mean(c), mean(d)])
-    B_expected = 9/3 * ((mean(a) - theta_m)^2 + (mean(b) - theta_m)^2 + 
+    B_expected = 9/3 * ((mean(a) - theta_m)^2 + (mean(b) - theta_m)^2 +
                         (mean(c) - theta_m)^2 + (mean(d) - theta_m)^2)
 
     @test StanInterface.B_variance([a, b, c, d]) ≈ B_expected
@@ -32,9 +32,9 @@ end
 
 @testset "R_hat(::Stanfit)" begin
     data = Dict("N" => 5, "y" => [1,1,1,1,1])
-    model_path = joinpath(StanInterface.CMDSTAN_PATH, 
+    model_path = joinpath(StanInterface.cmdstan_path(), 
         "examples", "bernoulli", "bernoulli.stan")
-                         
+
     sf = @suppress stan(model_path, data)
 
     r_hats = R_hat(sf)

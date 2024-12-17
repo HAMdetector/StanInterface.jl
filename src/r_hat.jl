@@ -1,4 +1,4 @@
-# between-chain variance 
+# between-chain variance
 function B_variance(x)
     chain_means = [mean(chain) for chain in x]
     mean_chain_means = mean(chain_means)
@@ -19,7 +19,7 @@ function R_hat(x)
 
     for (i, chain) in enumerate(x)
         half_N = floor(Int, length(chain) / 2)
-        
+
         push!(split_chains, chain[1:half_N])
         push!(split_chains, chain[(half_N + 1):end])
     end
@@ -34,16 +34,28 @@ function R_hat(x)
 end
 
 function R_hat(sf::Stanfit)
-    N = length(sf.result)
-    parameters = collect(keys(sf.result[1]))
-    excluded_parameters = ["stepsize__", "treedepth__", "n_leapfrog__", "energy__",
-                           "accept_stat__", "divergent__"]
+    f = x -> Dict((string(p[1]), collect(skipmissing(p[2]))) for p in pairs(x))
+    res = [CSV.read(codeunits(x), comment = "#", f) for x in sf.results]
+
+    parameters = collect(keys(res[1]))
+
+    excluded_parameters = [
+        "stepsize__", "treedepth__", "n_leapfrog__", "energy__", "accept_stat__",
+        "divergent__"
+    ]
+
     filter!(x -> x ∉ excluded_parameters, parameters)
     d = Dict{String, Float64}()
 
-    for p in parameters
-        v = [r[p] for r in sf.result]
-        d[p] = R_hat(v)
+    if fixed_param_(sf)
+        for p in parameters
+            d[p] = Inf
+        end
+    else
+        for p in parameters
+            v = [r[p] for r in res]
+            d[p] = R_hat(v)
+        end
     end
 
     return d

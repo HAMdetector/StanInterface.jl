@@ -1,42 +1,36 @@
-struct StanIO{T<:AbstractString, S<:AbstractVector}
-    model::T
-    data::Dict{T, R} where R <: Any
-    binary_file::T
-    data_file::T
-    result_file::S
-    diagnostics_file::T
-    save_binary::T
-    save_data::T
-    save_result::T
-    save_diagnostics::T
+struct StanIO
+    model::String
+    data::Dict{String, Any}
+    binary_file::String
+    data_file::String
+    result_file::String
 end
 
-function StanIO(model::T, data::Dict{T, S} where S, n_result_files::Int, save_binary::T, 
-                save_data::T, save_result::T, 
-                save_diagnostics::T) where {T<:AbstractString}
-        
-    result_file = [tempname() for i = 1:n_result_files]
-    binary_file, data_file, diagnostics_file = [tempname() for i = 1:3]
+function StanIO(
+    model::String,
+    data::Dict{String, <: Any},
+    n_result_files::Int,
+)
 
-    StanIO(cleanpath(model), data, binary_file, data_file, result_file, 
-           diagnostics_file, cleanpath(save_binary), cleanpath(save_data), 
-           cleanpath(save_result), cleanpath(save_diagnostics))
+    result_file = tempname()
+    binary_file = joinpath(tempdir(), string(hash(read(model, String)), base = 62))
+    data_file = tempname() * ".json"
+
+    StanIO(cleanpath(model), data, binary_file, data_file, result_file)
 end
 
 function cleanpath(path::AbstractString)
     path != "" && return path |> expanduser |> normpath |> abspath
+
     return path
 end
 
 function setupfiles(io::StanIO)
-    if splitext(io.model)[2] == ".stan"
+    if !isfile(io.binary_file)
         build_binary(io.model, io.binary_file)
-    else
-        cp(io.model, io.binary_file)
     end
 
-    io.save_data != "" && save_rdump(io.save_data, io.data)
-    io.save_data == "" && save_rdump(io.data_file, io.data)
+    save_json(io.data_file, io.data)
 end
 
 function copyfiles(io::StanIO)
@@ -49,45 +43,30 @@ function copyfiles(io::StanIO)
     end
 end
 
-function removefiles(io::StanIO)
+function removefiles(io::StanIO; cache_binary::Bool = true)
     rm(io.data_file, force = true)
-    rm(io.binary_file, force = true)
-    rm(io.diagnostics_file, force = true)
-    rm.(io.result_file, force = true)
+
+    tmp_files = readdir(dirname(io.result_file), join = true)
+    result_files = filter(x -> startswith(x, io.result_file), tmp_files)
+    rm.(result_files, force = true)
+
+    cache_binary || rm(io.binary_file, force = true)
 end
- 
-function save_rdump(path::AbstractString, d::Dict{String, T}) where T <: Any
-    isfile(path) && rm(path)
-    
-    strmout = open(expanduser(path), "w")
-    str = ""
-    for entry in d
-        str = "\"" * entry[1] * "\" <- "
-        val = entry[2]
-        if length(val)==1 && length(size(val))==0
-            # Scalar
-            str = str*"$(val)\n"
-         #elseif length(val)==1 && length(size(val))==1
-            # Single element vector
-            #str = str*"$(val[1])\n"
-        elseif length(val)>=1 && length(size(val))==1
-            # Vector
-            str = str*"structure(c("
-            write(strmout, str)
-            str = ""
-            writedlm(strmout, val', ',')
-            str = str*"), .Dim=c($(length(val))))\n"
-        elseif length(val)>1 && length(size(val))>1
-            # Array
-            str = str*"structure(c("
-            write(strmout, str)
-            str = ""
-            writedlm(strmout, val[:]', ',')
-            dimstr = "c"*string(size(val))
-            str = str*"), .Dim=$(dimstr))\n"
+
+function save_json(path::AbstractString, d::Dict{String, <: Any})
+    rowmajor_d = Dict{String, Any}()
+
+    for (k, v) in pairs(d)
+        if v isa Array
+            rowmajor_d[k] = permutedims(v, ndims(v):-1:1)
+        else
+            rowmajor_d[k] = v
         end
-        write(strmout, str)
     end
 
-    close(strmout)
+    open(cleanpath(path), "w") do io
+        write(io, JSON.json(rowmajor_d))
+    end
+
+    return nothing
 end
